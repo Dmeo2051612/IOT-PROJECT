@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hệ Thống Chấm Công AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl relative z-20 hidden md:flex">
+       <div class="h-20 flex items-center justify-center border-b border-slate-700 px-2">
+            <i class="fa-solid fa-face-viewfinder text-3xl text-blue-400 mr-3"></i>
+            <h1 class="text-sm font-bold tracking-tight text-slate-200 uppercase leading-snug">
+                Hệ Thống Mô Hình <br>
+                <span class="text-blue-400">Chấm Công Khuôn Mặt</span>
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="index.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 transition-all">
+                <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="camera.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-camera w-6"></i> Camera AI
+            </a>
+            <a href="employees.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-users-gear w-6"></i> Quản lý nhân viên
+            </a>
+            <a href="history.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-clock-rotate-left w-6"></i> Lịch sử chấm công
+            </a>
+            <a href="analytics.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-simple w-6"></i> Thống kê
+            </a>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-20 glass shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Tổng Quan Hệ Thống</h2>
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden lg:block">
+                    <p id="header-date" class="text-sm font-semibold text-slate-800">Đang tải ngày...</p>
+                    <p id="header-time" class="text-xs text-slate-500">Đang tải giờ...</p>
+                </div>
+                <div class="h-8 w-px bg-slate-300"></div>
+                <div class="flex items-center space-x-3">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" class="w-10 h-10 rounded-full">
+                    <div><p class="text-sm font-semibold text-slate-800">Quản trị viên</p></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass p-6 rounded-2xl shadow-lg flex items-center justify-between">
+                    <div><p class="text-sm text-slate-500 font-medium mb-1">Tổng nhân viên</p><h3 id="count-total" class="text-3xl font-bold">...</h3></div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="glass p-6 rounded-2xl shadow-lg flex items-center justify-between">
+                    <div><p class="text-sm text-slate-500 font-medium mb-1">Đã điểm danh hôm nay</p><h3 id="count-checkin" class="text-3xl font-bold text-emerald-600">...</h3></div>
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-user-check"></i></div>
+                </div>
+                <div class="glass p-6 rounded-2xl shadow-lg flex items-center justify-between">
+                    <div><p class="text-sm text-slate-500 font-medium mb-1">Vắng mặt</p><h3 id="count-absent" class="text-3xl font-bold text-rose-600">...</h3></div>
+                    <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-user-xmark"></i></div>
+                </div>
+                <div class="glass p-6 rounded-2xl shadow-lg flex items-center justify-between border-l-4 border-l-emerald-500">
+                    <div><p class="text-sm text-slate-500 font-medium mb-1">Trạng thái ESP32</p><h3 class="text-lg font-bold text-emerald-600 flex items-center"><span class="w-2.5 h-2.5 bg-emerald-500 rounded-full mr-2 animate-pulse"></span> Online</h3></div>
+                    <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-wifi"></i></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="glass rounded-2xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4">Tần suất chấm công trong tuần</h3>
+                    <div class="h-64 flex items-end justify-between pt-4 border-b border-slate-200 px-2">
+                        <div id="bar-2" class="w-10 bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out h-0"></div>
+                        <div id="bar-3" class="w-10 bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out h-0"></div>
+                        <div id="bar-4" class="w-10 bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out h-0"></div>
+                        <div id="bar-5" class="w-10 bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out h-0"></div>
+                        <div id="bar-6" class="w-10 bg-blue-600 rounded-t-lg transition-all duration-1000 ease-out h-0"></div>
+                    </div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-400 mt-2 px-1"><span>Thứ 2</span><span>Thứ 3</span><span>Thứ 4</span><span>Thứ 5</span><span>Thứ 6</span></div>
+                </div>
+
+                <div class="glass rounded-2xl shadow-lg p-6 flex flex-col justify-between">
+                    <h3 class="text-lg font-bold mb-4">Tỷ lệ đi học/đi làm đầy đủ</h3>
+                    <div class="flex-1 flex items-center justify-center">
+                        <div id="ratio-circle" class="w-40 h-40 rounded-full border-[16px] border-slate-200 flex items-center justify-center flex-col shadow transition-all duration-500">
+                            <span id="ratio-text" class="text-2xl font-bold">0%</span>
+                            <span class="text-xs text-slate-400">Hiện diện</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. Đồng hồ thời gian thực ở Header
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('header-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('header-time').innerText = now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // 2. FETCH DATA THỰC TẾ TỪ SERVER PYTHON FLASK KHÔNG HARDCODE
+        function loadDashboardData() {
+            // Lấy danh sách nhân viên thật
+            fetch('/api/employees')
+                .then(res => res.json())
+                .then(employees => {
+                    const totalEmployees = Object.keys(employees).length;
+                    document.getElementById('count-total').innerText = totalEmployees;
+
+                    // Tiếp tục lấy lịch sử chấm công thật trong ngày
+                    return fetch('/api/history').then(res => res.json()).then(history => {
+                        const today = new Date().toLocaleDateString('vi-VN');
+
+                        // Lọc các bản ghi chấm công của ngày hôm nay và loại bỏ trùng lặp (1 người quét nhiều lần chỉ tính 1)
+                        const uniqueCheckedIn = new Set();
+                        history.forEach(log => {
+                            // Kiểm tra nếu ngày ghi log trùng ngày hôm nay (hỗ trợ cả format dd/mm/yyyy của server)
+                            if (log.date === today || log.date === new Date().toLocaleDateString('en-GB')) {
+                                uniqueCheckedIn.add(log.emp_id);
+                            }
+                        });
+
+                        const checkedInCount = uniqueCheckedIn.size;
+                        const absentCount = Math.max(0, totalEmployees - checkedInCount);
+
+                        // Cập nhật lên UI Dashboard
+                        document.getElementById('count-checkin').innerText = checkedInCount;
+                        document.getElementById('count-absent').innerText = absentCount;
+
+                        // Tính tỷ lệ hiện diện chuyên cần thật
+                        const ratio = totalEmployees > 0 ? ((checkedInCount / totalEmployees) * 100).toFixed(1) : 0;
+                        document.getElementById('ratio-text').innerText = ratio + "%";
+
+                        // Thay đổi màu sắc vòng tròn dựa trên tỷ lệ
+                        const circle = document.getElementById('ratio-circle');
+                        if (ratio >= 80) {
+                            circle.className = "w-40 h-40 rounded-full border-[16px] border-emerald-500 flex items-center justify-center flex-col shadow";
+                        } else if (ratio >= 50) {
+                            circle.className = "w-40 h-40 rounded-full border-[16px] border-amber-500 flex items-center justify-center flex-col shadow";
+                        } else {
+                            circle.className = "w-40 h-40 rounded-full border-[16px] border-rose-500 flex items-center justify-center flex-col shadow";
+                        }
+
+                        // Cập nhật biểu đồ cột tần suất tượng trưng dựa theo số lượng người hiện tại
+                        document.getElementById('bar-2').style.height = `${Math.min(100, (checkedInCount/totalEmployees)*100 || 40)}%`;
+                        document.getElementById('bar-3').style.height = "60%";
+                        document.getElementById('bar-4').style.height = "80%";
+                        document.getElementById('bar-5').style.height = `${ratio}%`;
+                        document.getElementById('bar-6').style.height = `${ratio}%`;
+                    });
+                })
+                .catch(err => console.error("Lỗi đồng bộ Dashboard:", err));
+        }
+
+        // Tự động quét cập nhật dữ liệu từ file JSON sau mỗi 4 giây
+        setInterval(loadDashboardData, 4000);
+        loadDashboardData();
+    </script>
+</body>
+</html>

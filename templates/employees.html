@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhân Viên - Hệ Thống Mô Hình Chấm Công Khuôn Mặt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl relative z-20 hidden md:flex">
+       <div class="h-20 flex items-center justify-center border-b border-slate-700 px-2">
+            <i class="fa-solid fa-face-viewfinder text-3xl text-blue-400 mr-3"></i>
+            <h1 class="text-sm font-bold tracking-tight text-slate-200 uppercase leading-snug">
+                Hệ Thống Mô Hình <br>
+                <span class="text-blue-400">Chấm Công Khuôn Mặt</span>
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="index.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="camera.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-camera w-6"></i> Camera AI
+            </a>
+            <a href="employees.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 transition-all">
+                <i class="fa-solid fa-users-gear w-6"></i> Quản lý nhân viên
+            </a>
+            <a href="history.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-clock-rotate-left w-6"></i> Lịch sử chấm công
+            </a>
+            <a href="analytics.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-simple w-6"></i> Thống kê
+            </a>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-20 glass shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Danh Sách Nhân Viên</h2>
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden lg:block">
+                    <p id="header-date" class="text-sm font-semibold text-slate-800">Đang tải...</p>
+                    <p id="header-time" class="text-xs text-slate-500">Đang tải...</p>
+                </div>
+                <div class="h-8 w-px bg-slate-300"></div>
+                <div class="flex items-center space-x-3">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" class="w-10 h-10 rounded-full">
+                    <div><p class="text-sm font-semibold text-slate-800">Quản trị viên</p></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/50">
+            <div class="flex items-center justify-between gap-4">
+                <div class="relative w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                    <input type="text" id="search-input" onkeyup="filterEmployees()" onkeypress="if(event.key === 'Enter') event.preventDefault();" placeholder="Tìm tên, mã NV hoặc phòng ban..." class="pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white/80 shadow-sm w-full focus:outline-blue-500">
+                </div>
+                <button onclick="openRegisterModal()" class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition flex items-center">
+                    <i class="fa-solid fa-user-plus mr-2"></i> Thêm nhân viên mới
+                </button>
+            </div>
+
+            <div class="glass rounded-2xl shadow-lg p-6 overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-100/80">
+                        <tr>
+                            <th class="px-6 py-3 rounded-l-xl">Mã NV</th>
+                            <th class="px-6 py-3">Họ Tên</th>
+                            <th class="px-6 py-3">Phòng Ban</th>
+                            <th class="px-6 py-3">Dữ liệu FaceID</th>
+                            <th class="px-6 py-3 rounded-r-xl text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee-table-body" class="divide-y divide-slate-100">
+                        <tr class="hover:bg-white/40 transition">
+                            <td class="px-6 py-4 font-semibold text-blue-600">NV0101</td>
+                            <td class="px-6 py-4 font-medium">Nguyễn Văn Admin</td>
+                            <td class="px-6 py-4 text-slate-600">Quản trị hệ thống</td>
+                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium"><i class="fa-solid fa-circle-check mr-1"></i> Đã đăng ký</span></td>
+                            <td class="px-6 py-4 text-center"><button class="text-rose-600 hover:text-rose-800 font-medium"><i class="fa-solid fa-trash"></i> Xóa</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="registerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="text-lg font-bold flex items-center"><i class="fa-solid fa-face-viewfinder text-blue-400 mr-2"></i> Đăng Ký Thiết Lập FaceID</h3>
+                <button onclick="closeRegisterModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Mã Nhân Viên</label>
+                        <input type="text" id="reg-id" placeholder="VD: NV0102" class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Họ và Tên</label>
+                        <input type="text" id="reg-name" placeholder="Nhập tên tiếng Việt..." class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Phòng Ban</label>
+                        <select id="reg-dept" class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-blue-500 text-sm bg-white">
+                            <option>Phòng IT</option>
+                            <option>Phòng Nhân Sự</option>
+                            <option>Phòng Kinh Doanh</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 relative overflow-hidden">
+                    <div id="camera-box" class="w-full aspect-video bg-slate-800 rounded-xl flex flex-col items-center justify-center text-white relative">
+                        <i class="fa-solid fa-camera text-3xl text-slate-500 mb-2 animate-pulse"></i>
+                        <span class="text-xs text-slate-400">Chưa kích hoạt luồng quét</span>
+                        <div id="scanner-line" class="absolute inset-x-0 top-0 h-0.5 bg-emerald-400 shadow-lg shadow-emerald-400 hidden"></div>
+                    </div>
+
+                    <button onclick="startScanFace()" id="btn-scan" class="mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-xl transition flex items-center justify-center">
+                        <i class="fa-solid fa-bolt mr-2 text-amber-400"></i> Kích hoạt quét FaceID
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end space-x-3">
+                <button onclick="closeRegisterModal()" class="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium text-sm">Hủy bỏ</button>
+                <button onclick="saveEmployee()" id="btn-save" disabled class="px-5 py-2 bg-blue-600 text-white font-medium text-sm rounded-xl opacity-50 cursor-not-allowed transition">Lưu dữ liệu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Đồng hồ Header
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('header-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('header-time').innerText = now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // 2. Logic điều khiển Đăng ký khuôn mặt (Modal)
+        const modal = document.getElementById('registerModal');
+        const cameraBox = document.getElementById('camera-box');
+        const btnScan = document.getElementById('btn-scan');
+        const btnSave = document.getElementById('btn-save');
+
+        btnSave.style.display = 'none';
+
+        function openRegisterModal() {
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.firstElementChild.classList.remove('scale-95'); }, 50);
+
+            fetch('/api/camera/toggle', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: 'on'})
+            }).then(() => {
+                cameraBox.innerHTML = `
+                    <img src="/video_feed" class="w-full h-full object-cover rounded-xl opacity-80">
+                    <div id="scanner-line" class="absolute inset-x-0 top-0 h-1 bg-emerald-400 shadow-md hidden"></div>
+                `;
+            });
+        }
+
+        function closeRegisterModal() {
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); resetModalState(); }, 300);
+        }
+
+        function startScanFace() {
+            const emp_id = document.getElementById('reg-id').value;
+            const name = document.getElementById('reg-name').value;
+            const dept = document.getElementById('reg-dept').value;
+
+            if(!emp_id || !name) {
+                alert("Vui lòng nhập Mã nhân viên và Họ tên!");
+                return;
+            }
+
+            btnScan.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> Đang chụp ảnh & Train AI (Chờ ~10s)...`;
+            btnScan.disabled = true;
+            document.getElementById('scanner-line').classList.remove('hidden');
+            document.getElementById('scanner-line').classList.add('animate-[bounce_2s_infinite]');
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ emp_id: emp_id, name: name, dept: dept })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    btnScan.className = "mt-4 w-full py-2 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-xl flex items-center justify-center";
+                    btnScan.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i> ${data.message}`;
+
+                    fetchEmployees();
+
+                    setTimeout(() => {
+                        alert("Đăng ký thành công! AI đã được nạp trí nhớ mới.");
+                        closeRegisterModal();
+                    }, 3000);
+                } else {
+                    alert("Lỗi hệ thống: " + data.error);
+                    resetModalState();
+                }
+            })
+            .catch(error => {
+                alert("Lỗi kết nối tới Server AI!");
+                resetModalState();
+            });
+        }
+
+        function resetModalState() {
+            cameraBox.innerHTML = `<i class="fa-solid fa-camera text-3xl text-slate-500 mb-2 animate-pulse"></i><span class="text-xs text-slate-400">Chưa kích hoạt luồng quét</span>`;
+            btnScan.className = "mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-xl transition flex items-center justify-center";
+            btnScan.innerHTML = `<i class="fa-solid fa-bolt mr-2 text-amber-400"></i> Kích hoạt quét FaceID`;
+            btnScan.disabled = false;
+            document.getElementById('reg-id').value = "";
+            document.getElementById('reg-name').value = "";
+        }
+
+        // 3. LẤY DỮ LIỆU THẬT VÀ VẼ BẢNG NHÂN VIÊN
+        function fetchEmployees() {
+            fetch('/api/employees')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('employee-table-body');
+                    tbody.innerHTML = '';
+
+                    if (Object.keys(data).length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400">Chưa có nhân viên nào trong hệ thống.</td></tr>`;
+                        return;
+                    }
+
+                    for (const [id, user] of Object.entries(data)) {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-white/40 transition";
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 font-semibold text-blue-600">${user.emp_id}</td>
+                            <td class="px-6 py-4 font-medium">${user.name}</td>
+                            <td class="px-6 py-4 text-slate-600">${user.dept || 'Chưa cập nhật'}</td>
+                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium"><i class="fa-solid fa-circle-check mr-1"></i> Đã đăng ký (ID AI: ${id})</span></td>
+                            <td class="px-6 py-4 text-center">
+                                <button class="text-rose-600 hover:text-rose-800 font-medium transition duration-150" onclick="deleteEmployee('${id}')">
+                                    <i class="fa-solid fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                    // Đồng bộ lại bộ lọc tìm kiếm trong trường hợp bảng đang load lại giữa chừng
+                    filterEmployees();
+                })
+                .catch(err => console.error("Lỗi tải danh sách nhân viên:", err));
+        }
+
+        // 4. CẬP NHẬT: LOGIC TÌM KIẾM THEO TỪ KHÓA (REALTIME SEARCH)
+        function filterEmployees() {
+            const keyword = document.getElementById('search-input').value.toLowerCase().trim();
+            const tableBody = document.getElementById('employee-table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+            let hasResult = false;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+
+                // Bỏ qua hàng thông báo "Không tìm thấy kết quả" nếu có
+                if (row.id === 'no-result-row') continue;
+
+                // Đọc text từ các cột: 0 (Mã NV), 1 (Họ tên), 2 (Phòng ban)
+                const empIdText = row.cells[0] ? row.cells[0].innerText.toLowerCase() : '';
+                const nameText = row.cells[1] ? row.cells[1].innerText.toLowerCase() : '';
+                const deptText = row.cells[2] ? row.cells[2].innerText.toLowerCase() : '';
+
+                // So khớp từ khóa với 1 trong 3 trường thông tin dữ liệu
+                if (empIdText.includes(keyword) || nameText.includes(keyword) || deptText.includes(keyword)) {
+                    row.style.display = ""; // Hiển thị dòng khớp
+                    hasResult = true;
+                } else {
+                    row.style.display = "none"; // Ẩn dòng không khớp
+                }
+            }
+
+            // Dọn dẹp dòng thông báo cũ trước khi tạo mới
+            const oldNoResult = document.getElementById('no-result-row');
+            if (oldNoResult) oldNoResult.remove();
+
+            // Nếu không tìm thấy ai, xuất dòng thông báo thân thiện lên bảng
+            if (!hasResult && rows.length > 0) {
+                const noResultRow = document.createElement('tr');
+                noResultRow.id = 'no-result-row';
+                noResultRow.innerHTML = `<td colspan="5" class="px-6 py-8 text-center text-slate-400"><i class="fa-solid fa-user-slash mr-2"></i>Không tìm thấy nhân viên nào khớp với từ khóa "${keyword}".</td>`;
+                tableBody.appendChild(noResultRow);
+            }
+        }
+
+        function deleteEmployee(aiId) {
+            if (confirm("Bạn có chắc chắn muốn xóa nhân viên này? Toàn bộ dữ liệu ảnh FaceID liên quan cũng sẽ bị dọn dẹp.")) {
+                fetch(`/api/employees/delete/${aiId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        fetchEmployees();
+                    } else {
+                        alert("Lỗi từ server: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert("Không thể kết nối đến máy chủ!");
+                    console.error("Lỗi:", error);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchEmployees);
+    </script>
+</body>
+</html>

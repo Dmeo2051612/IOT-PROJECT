@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống Kê Báo Cáo - Hệ Thống Mô Hình Chấm Công Khuôn Mặt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl relative z-20 hidden md:flex">
+       <div class="h-20 flex items-center justify-center border-b border-slate-700 px-2">
+            <i class="fa-solid fa-face-viewfinder text-3xl text-blue-400 mr-3"></i>
+            <h1 class="text-sm font-bold tracking-tight text-slate-200 uppercase leading-snug">
+                Hệ Thống Mô Hình <br>
+                <span class="text-blue-400">Chấm Công Khuôn Mặt</span>
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="index.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="camera.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-camera w-6"></i> Camera AI
+            </a>
+            <a href="employees.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-users-gear w-6"></i> Quản lý nhân viên
+            </a>
+            <a href="history.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-clock-rotate-left w-6"></i> Lịch sử chấm công
+            </a>
+            <a href="analytics.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 transition-all">
+                <i class="fa-solid fa-chart-simple w-6"></i> Thống kê
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-xs text-slate-500 text-center">Hệ thống Smart-Attendance v1.0</div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-20 glass shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Thống Kê & Báo Cáo</h2>
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden lg:block">
+                    <p id="header-date" class="text-sm font-semibold text-slate-800">Đang tải...</p>
+                    <p id="header-time" class="text-xs text-slate-500">Đang tải...</p>
+                </div>
+                <div class="h-8 w-px bg-slate-300"></div>
+                <div class="flex items-center space-x-3">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" class="w-10 h-10 rounded-full">
+                    <div><p class="text-sm font-semibold text-slate-800">Quản trị viên</p></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50">
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-slate-500 font-medium"><i class="fa-solid fa-circle-info mr-1 text-blue-500"></i> Dữ liệu thống kê tự động cập nhật từ CSDL Realtime</div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div class="glass p-6 rounded-2xl shadow-md flex flex-col h-[420px]">
+                    <h3 class="text-base font-bold text-slate-700 mb-4"><i class="fa-solid fa-chart-bar text-blue-500 mr-2"></i>Số lượt chấm công theo phòng ban thực tế</h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-2xl shadow-md flex flex-col h-[420px]">
+                    <h3 class="text-base font-bold text-slate-700 mb-4"><i class="fa-solid fa-chart-pie text-emerald-500 mr-2"></i>Phân bổ trạng thái kỷ luật thực tế</h3>
+                    <div class="flex-1 flex items-center justify-center w-full h-full relative">
+                        <div class="w-full max-w-[310px] h-full flex items-center justify-center">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('header-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('header-time').innerText = now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        let departmentChart, statusChart;
+
+        function initCharts(deptLabels, deptData, statusData) {
+            // 1. Khởi tạo Biểu đồ cột cố định 3 phòng ban
+            const ctxBar = document.getElementById('departmentChart').getContext('2d');
+            departmentChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: deptLabels,
+                    datasets: [{
+                        label: 'Số lượt quét',
+                        data: deptData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+            // 2. Khởi tạo Biểu đồ tròn trạng thái kỷ luật
+            const ctxPie = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đúng giờ', 'Đi muộn', 'Cảnh báo/Thẻ lạ'],
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.85)',
+                            'rgba(245, 158, 11, 0.85)',
+                            'rgba(239, 68, 68, 0.85)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function buildAnalytics() {
+            fetch('/api/history')
+                .then(res => res.json())
+                .then(history => {
+                    // CỐ ĐỊNH CHUẨN XÁC KHUNG 3 PHÒNG BAN THỰC TẾ
+                    let deptCounts = {
+                        "Phòng IT": 0,
+                        "Phòng Nhân Sự": 0,
+                        "Phòng Kinh Doanh": 0
+                    };
+
+                    let statusCounts = { "onTime": 0, "late": 0, "warning": 0 };
+
+                    history.forEach(log => {
+                        // Trích xuất dữ liệu phòng ban từ log
+                        let dept = log.dept || "";
+
+                        // Chuẩn hóa chuỗi để gom nhóm dữ liệu cũ/mới về đúng 3 phòng ban chính thức
+                        if (dept.includes("IT") || dept.includes("Kỹ thuật") || dept.includes("Mạng")) {
+                            dept = "Phòng IT";
+                        } else if (dept.includes("Nhân Sự") || dept.includes("HR") || dept.includes("An Toàn")) {
+                            dept = "Phòng Nhân Sự";
+                        } else if (dept.includes("Kinh Doanh") || dept.includes("Marketing")) {
+                            dept = "Phòng Kinh Doanh";
+                        }
+
+                        // Chỉ tăng bộ đếm nếu phòng ban hợp lệ
+                        if (deptCounts.hasOwnProperty(dept)) {
+                            deptCounts[dept] += 1;
+                        }
+
+                        // Phân tách trạng thái dựa trên lịch sử chấm công thực tế
+                        if (log.status === "Đúng giờ" || log.status === "Đúng giờ (RFID)") {
+                            statusCounts.onTime += 1;
+                        } else if (log.status === "Đi muộn" || log.status === "Đi muộn (RFID)") {
+                            statusCounts.late += 1;
+                        } else {
+                            statusCounts.warning += 1; // Thẻ lạ gian lận hoặc Cảnh báo không hợp lệ
+                        }
+                    });
+
+                    const deptLabels = Object.keys(deptCounts);
+                    const deptData = Object.values(deptCounts);
+                    const statusData = [statusCounts.onTime, statusCounts.late, statusCounts.warning];
+
+                    // Tiến hành cập nhật đè (update) dữ liệu động thay vì vẽ đè gây lỗi lấp nháy chart
+                    if (departmentChart && statusChart) {
+                        departmentChart.data.labels = deptLabels;
+                        departmentChart.data.datasets[0].data = deptData;
+                        departmentChart.update();
+
+                        statusChart.data.datasets[0].data = statusData;
+                        statusChart.update();
+                    } else {
+                        // Gọi lần đầu khi khởi chạy trang
+                        initCharts(deptLabels, deptData, statusData);
+                    }
+                })
+                .catch(err => console.error("Lỗi cập nhật biểu đồ thống kê:", err));
+        }
+
+        // Tự động làm mới dữ liệu biểu đồ mỗi 5 giây
+        setInterval(buildAnalytics, 5000);
+        buildAnalytics();
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ Thống Chấm Công AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2000&auto=format&fit=crop'); background-size: cover; background-position: center; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen bg-slate-900/50">
+
+    <div class="glass w-full max-w-md p-8 rounded-3xl shadow-2xl">
+        <div class="text-center mb-8">
+            <i class="fa-solid fa-face-viewfinder text-5xl text-blue-600 mb-3"></i>
+            <h2 class="text-2xl font-bold text-slate-800">Đăng Nhập Quản Trị</h2>
+            <p class="text-sm text-slate-500 mt-1">Hệ Thống Chấm Công AI ESP32</p>
+        </div>
+
+        <div id="step-1">
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Email quản trị viên</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-regular fa-envelope text-slate-400"></i>
+                    </div>
+                    <input type="email" id="email" class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="admin@congty.com">
+                </div>
+            </div>
+            <button onclick="sendOTP()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-blue-600/30">
+                Gửi mã OTP
+            </button>
+        </div>
+
+        <div id="step-2" class="hidden">
+            <div class="mb-5 text-center">
+                <p class="text-sm text-slate-600">Mã xác thực gồm 6 chữ số đã được gửi đến:</p>
+                <p id="display-email" class="font-bold text-blue-600"></p>
+            </div>
+            <div class="mb-5">
+                <input type="text" id="otp" maxlength="6" class="w-full text-center text-2xl tracking-[0.5em] font-bold py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="------">
+            </div>
+            <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-emerald-600/30">
+                Xác Nhận & Đăng Nhập
+            </button>
+            <div class="text-center mt-4">
+                <button onclick="goBack()" class="text-sm text-slate-500 hover:text-blue-600 underline">Quay lại nhập Email</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmail = "";
+
+        async function sendOTP() {
+            const email = document.getElementById('email').value;
+            if(!email) {
+                alert("Vui lòng nhập email!");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="sendOTP()"]');
+            btn.innerText = "Đang gửi...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    currentEmail = email;
+                    document.getElementById('display-email').innerText = email;
+                    document.getElementById('step-1').classList.add('hidden');
+                    document.getElementById('step-2').classList.remove('hidden');
+                } else {
+                    alert("Lỗi khi gửi OTP: " + data.message);
+                }
+            } catch (error) {
+                alert("Không thể kết nối đến Server!");
+            } finally {
+                btn.innerText = "Gửi mã OTP";
+                btn.disabled = false;
+            }
+        }
+
+        async function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+            if(otp.length !== 6) {
+                alert("Vui lòng nhập đủ 6 số OTP!");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="verifyOTP()"]');
+            btn.innerText = "Đang kiểm tra...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentEmail, otp: otp })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    alert("Đăng nhập thành công! Đang chuyển hướng...");
+                    window.location.href = "/dashboard";
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            } catch (error) {
+                alert("Không thể kết nối đến Server!");
+            } finally {
+                btn.innerText = "Xác Nhận & Đăng Nhập";
+                btn.disabled = false;
+            }
+        }
+
+        function goBack() {
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-1').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+# IDE & Môi trường
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# BẢO MẬT (Tuyệt đối không đẩy lên)
+firebase_key.json
+
+# File thực thi và file nén
+*.exe
+*.zip
+ngrok.exe
+ngrok-v3-stable-windows-amd64.zip
+
+# Dữ liệu cục bộ & Log
+logs.json
+users.json
+cam
+
+# Bỏ qua hình ảnh test (nếu cần giữ lại ảnh để viết README thì xóa 2 dòng dưới)
+*.jpg
+*.png
+
+# Bỏ qua thư mục Dataset và model (Nếu dataset quá nặng >100MB)
+# dataset/
+trainer/

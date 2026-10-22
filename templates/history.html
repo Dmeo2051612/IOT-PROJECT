@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Chấm Công - Hệ Thống Mô Hình Chấm Công Khuôn Mặt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-2xl relative z-20 hidden md:flex">
+       <div class="h-20 flex items-center justify-center border-b border-slate-700 px-2">
+            <i class="fa-solid fa-face-viewfinder text-3xl text-blue-400 mr-3"></i>
+            <h1 class="text-sm font-bold tracking-tight text-slate-200 uppercase leading-snug">
+                Hệ Thống Mô Hình <br>
+                <span class="text-blue-400">Chấm Công Khuôn Mặt</span>
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="index.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="camera.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-camera w-6"></i> Camera AI
+            </a>
+            <a href="employees.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-users-gear w-6"></i> Quản lý nhân viên
+            </a>
+            <a href="history.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 transition-all">
+                <i class="fa-solid fa-clock-rotate-left w-6"></i> Lịch sử chấm công
+            </a>
+            <a href="analytics.html" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-simple w-6"></i> Thống kê
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-700 text-xs text-slate-500 text-center">Hệ thống Smart-Attendance v1.0</div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-20 glass shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Lịch Sử Chấm Công Thực Tế</h2>
+            <div class="flex items-center space-x-6">
+                <div class="text-right hidden lg:block">
+                    <p id="header-date" class="text-sm font-semibold text-slate-800">Đang tải...</p>
+                    <p id="header-time" class="text-xs text-slate-500">Đang tải...</p>
+                </div>
+                <div class="h-8 w-px bg-slate-300"></div>
+                <div class="flex items-center space-x-3">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0f172a&color=fff" class="w-10 h-10 rounded-full">
+                    <div><p class="text-sm font-semibold text-slate-800">Quản trị viên</p></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/50">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex flex-1 flex-col sm:flex-row items-center gap-4 w-full">
+                    <div class="relative w-full sm:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="search-history" onkeyup="filterHistory()" onkeypress="if(event.key === 'Enter') event.preventDefault();" placeholder="Tìm tên, mã NV hoặc phòng ban..." class="pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white/80 shadow-sm w-full focus:outline-blue-500">
+                    </div>
+
+                    <div class="relative w-full sm:w-52">
+                        <i class="fa-solid fa-calendar-days absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="date" id="filter-date" onchange="filterHistory()" class="pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white/80 shadow-sm w-full focus:outline-blue-500 text-slate-600">
+                    </div>
+
+                    <button onclick="clearDateFilter()" class="text-xs text-slate-500 hover:text-blue-600 font-medium transition py-2">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Xóa lọc ngày
+                    </button>
+                </div>
+
+                <button onclick="exportToExcel()" class="w-full md:w-auto px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition flex items-center justify-center">
+                    <i class="fa-solid fa-file-excel mr-2"></i> Xuất file Excel
+                </button>
+            </div>
+
+            <div class="glass rounded-2xl shadow-lg p-6 overflow-x-auto">
+                <table id="history-table" class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-100/80">
+                        <tr>
+                            <th class="px-6 py-3 rounded-l-xl">Thời Gian</th>
+                            <th class="px-6 py-3">Mã NV</th>
+                            <th class="px-6 py-3">Họ Tên</th>
+                            <th class="px-6 py-3">Phòng Ban</th>
+                            <th class="px-6 py-3">Phương Thức</th>
+                            <th class="px-6 py-3 rounded-r-xl text-center">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-slate-100">
+                        <tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Đang đồng bộ dữ liệu từ CSDL...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. Đồng hồ Header hiển thị thời gian thực tế
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('header-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('header-time').innerText = now.toLocaleTimeString('vi-VN');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // 2. Tải dữ liệu lịch sử chấm công thật từ Server API
+        function fetchHistory() {
+            fetch('/api/history')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('history-table-body');
+                    tbody.innerHTML = ''; // Làm sạch bảng
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Chưa ghi nhận lượt quét chấm công nào.</td></tr>`;
+                        return;
+                    }
+
+                    // Đảo ngược mảng để dữ liệu mới nhất hiện lên đầu bảng
+                    const sortedData = [...data].reverse();
+
+                    sortedData.forEach(log => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-white/40 transition";
+
+                        // Định dạng màu sắc thẻ trạng thái
+                        let statusStyle = "bg-slate-100 text-slate-700";
+                        if (log.status.includes("Đúng giờ")) statusStyle = "bg-emerald-100 text-emerald-700";
+                        else if (log.status.includes("Đi muộn")) statusStyle = "bg-amber-100 text-amber-700";
+                        else if (log.status.includes("Cảnh báo") || log.status.includes("lại") || log.status.includes("lạ")) statusStyle = "bg-rose-100 text-rose-700";
+
+                        // Chuẩn hóa tên phòng ban
+                        let fixedDept = log.dept || "Chưa phân phòng";
+                        if (fixedDept.includes("IT") || fixedDept.includes("Kỹ thuật") || fixedDept.includes("Mạng")) fixedDept = "Phòng IT";
+                        else if (fixedDept.includes("Nhân Sự") || fixedDept.includes("HR") || fixedDept.includes("An Toàn")) fixedDept = "Phòng Nhân Sự";
+                        else if (fixedDept.includes("Kinh Doanh") || fixedDept.includes("Marketing")) fixedDept = "Phòng Kinh Doanh";
+
+                        // Lấy Mã nhân viên, Thời gian và Ngày tháng từ JSON
+                        let employeeId = log.emp_id || "KHÁCH";
+                        let logTime = log.time || "00:00:00";
+                        let logDate = log.date || "Chưa rõ ngày";
+                        let displayTime = `${logTime} (${logDate})`;
+
+                        // LẤY ĐỘ KHỚP AI: Nếu là quẹt thẻ RFID thì hiển thị "100% (Thẻ)", còn FaceID thì lấy trường accuracy gốc
+                        let aiAccuracy = log.accuracy || "---";
+                        if (log.status.includes("RFID")) {
+                            aiAccuracy = `<span class="text-blue-500 font-medium"><i class="fa-solid fa-id-card mr-1"></i>100%</span>`;
+                        } else {
+                            aiAccuracy = `<span class="text-indigo-500 font-medium"><i class="fa-solid fa-face-viewfinder mr-1"></i>${aiAccuracy}</span>`;
+                        }
+
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-slate-500">${displayTime}</td>
+                            <td class="px-6 py-4 font-semibold text-blue-600">${employeeId}</td>
+                            <td class="px-6 py-4 font-medium">${log.name || 'Nội bộ'}</td>
+                            <td class="px-6 py-4 text-slate-600">${fixedDept}</td>
+                            <td class="px-6 py-4 text-slate-500">${aiAccuracy}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="${statusStyle} text-xs px-2.5 py-1 rounded-full font-medium inline-block w-28 text-center">${log.status}</span>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Gọi hàm lọc song song để bảo toàn bộ lọc văn bản/ngày hiện tại
+                    filterHistory();
+                })
+                .catch(err => console.error("Lỗi đồng bộ lịch sử chấm công:", err));
+        }
+
+        // 3. Logic xử lý Bộ lọc đồng bộ chính xác (Văn bản + Lịch Chọn Ngày)
+        function filterHistory() {
+            const keyword = document.getElementById('search-history').value.toLowerCase().trim();
+            const dateInput = document.getElementById('filter-date').value; // Trả về định dạng: YYYY-MM-DD từ hộp lịch
+
+            let formattedSelectedDate = "";
+            if (dateInput) {
+                const parts = dateInput.split('-');
+                formattedSelectedDate = `${parts[2]}/${parts[1]}/${parts[0]}`; // Chuyển thành cấu trúc DD/MM/YYYY để so khớp
+            }
+
+            const tableBody = document.getElementById('history-table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+            let hasResult = false;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.id === 'no-history-row') continue;
+
+                // Lấy chuỗi text ở cột Thời Gian (ví dụ: "10:39:23 (16/06/2026)")
+                const timeText = row.cells[0] ? row.cells[0].innerText : '';
+                const empIdText = row.cells[1] ? row.cells[1].innerText.toLowerCase() : '';
+                const nameText = row.cells[2] ? row.cells[2].innerText.toLowerCase() : '';
+                const deptText = row.cells[3] ? row.cells[3].innerText.toLowerCase() : '';
+
+                // So khớp từ khóa văn bản
+                const matchKeyword = empIdText.includes(keyword) || nameText.includes(keyword) || deptText.includes(keyword);
+
+                // So khớp chuỗi ngày (Nếu không chọn lịch -> auto Đúng. Nếu chọn lịch -> kiểm tra ngày có nằm trong text cột 1 không)
+                const matchDate = formattedSelectedDate === "" || timeText.includes(formattedSelectedDate);
+
+                if (matchKeyword && matchDate) {
+                    row.style.display = ""; // Thỏa mãn cả 2 -> hiển thị dòng dữ liệu
+                    hasResult = true;
+                } else {
+                    row.style.display = "none"; // Không thỏa mãn -> ẩn dòng
+                }
+            }
+
+            // Quản lý hiển thị thông báo trống kết quả lọc
+            const oldNoResult = document.getElementById('no-history-row');
+            if (oldNoResult) oldNoResult.remove();
+
+            if (!hasResult && rows.length > 0) {
+                const noResultRow = document.createElement('tr');
+                noResultRow.id = 'no-history-row';
+                noResultRow.innerHTML = `<td colspan="6" class="px-6 py-8 text-center text-slate-400"><i class="fa-solid fa-clock-cell-slash mr-2"></i>Không tìm thấy lịch sử chấm công nào khớp với bộ lọc dữ liệu.</td>`;
+                tableBody.appendChild(noResultRow);
+            }
+        }
+
+        // 4. Xóa nhanh bộ lọc ngày tháng năm
+        function clearDateFilter() {
+            document.getElementById('filter-date').value = "";
+            filterHistory();
+        }
+
+        // 5. Hàm xuất báo cáo Excel (Chỉ xuất các dòng dữ liệu đang hiển thị sau khi lọc)
+        function exportToExcel() {
+            const tableBody = document.getElementById('history-table-body');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            // Khởi tạo mảng chứa tiêu đề bảng Excel
+            const excelData = [
+                ["Thời Gian", "Mã Nhân Viên", "Họ Và Tên", "Phòng Ban", "Phương Thức Quét", "Trạng Thái Kỷ Luật"]
+            ];
+
+            let countExportRows = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                // Chỉ lấy những dòng đang hiển thị (không bị ẩn bởi bộ lọc) và loại bỏ dòng thông báo trống
+                if (row.style.display !== "none" && row.id !== "no-history-row") {
+                    const time = row.cells[0] ? row.cells[0].innerText : '';
+                    const empId = row.cells[1] ? row.cells[1].innerText : '';
+                    const name = row.cells[2] ? row.cells[2].innerText : '';
+                    const dept = row.cells[3] ? row.cells[3].innerText : '';
+                    const method = row.cells[4] ? row.cells[4].innerText.trim() : '';
+                    const status = row.cells[5] ? row.cells[5].innerText.trim() : '';
+
+                    excelData.push([time, empId, name, dept, method, status]);
+                    countExportRows++;
+                }
+            }
+
+            if(countExportRows === 0) {
+                alert("Không có dữ liệu hiển thị phù hợp để xuất file Excel!");
+                return;
+            }
+
+            // Tiến hành chuyển đổi dữ liệu mảng sang cấu trúc bảng Excel (.xlsx)
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+            // Cấu hình độ rộng các cột tự động cho đẹp mắt trong Excel
+            ws['!cols'] = [
+                { wch: 25 }, // Thời gian
+                { wch: 15 }, // Mã NV
+                { wch: 25 }, // Họ tên
+                { wch: 20 }, // Phòng ban
+                { wch: 22 }, // Phương thức
+                { wch: 18 }  // Trạng thái
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Báo Cáo Chấm Công");
+
+            // Đặt tên file xuất ra đi kèm ngày tháng hiện tại để dễ lưu trữ
+            const dateStr = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `Bao_Cao_Cham_Cong_${dateStr}.xlsx`);
+        }
+
+        // Tự động tải và đồng bộ lại dữ liệu lịch sử mỗi 5 giây
+        setInterval(fetchHistory, 5000);
+        document.addEventListener('DOMContentLoaded', fetchHistory);
+    </script>
+</body>
+</html>
